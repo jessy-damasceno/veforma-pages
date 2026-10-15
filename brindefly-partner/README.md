@@ -68,4 +68,11 @@ O git fica na raiz do repositório (`veforma-pages`), por isso o `prepare` insta
 
 - `next build` gera o site estático em `out/` (sem rotas de API, server actions nem middleware).
 - CI em `.github/workflows/ci.yml` roda lint, typecheck e build em PRs e nas branches principais.
-- Deploy em `.github/workflows/deploy.yml` no push para `master`: publica `out/` no projeto do Pages `brindefly-partner-hml` (`https://brindefly-hml.veforma.com.br`). Usa o environment `hml` (variables `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_VEFORMA_CLIENT_API_URL`, `NEXT_PUBLIC_BRINDEFLY_PANEL_URL` e `CLOUDFLARE_PAGES_PROJECT`) e os secrets `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID`.
+- Deploy em `.github/workflows/deploy.yml`, um projeto do Pages por ambiente:
+
+  | Branch | Environment | Projeto do Pages | Domínio |
+  | --- | --- | --- | --- |
+  | `homolog` | `hml` | `brindefly-partner-hml` | `https://brindefly-hml.veforma.com.br` |
+  | `master` | `production` | `brindefly-partner` | `https://brindefly.veforma.com.br` |
+
+  Cada environment tem as variables `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_VEFORMA_CLIENT_API_URL`, `NEXT_PUBLIC_BRINDEFLY_PANEL_URL` e `CLOUDFLARE_PAGES_PROJECT`; os secrets `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID` são do repositório.

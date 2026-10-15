@@ -34,7 +34,7 @@ Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Tailwind 
 
 ## Cloudflare
 
-- Cloudflare Pages, projeto `brindefly-partner-hml` (domínio `brindefly-hml.veforma.com.br`). O build gera a pasta `out/`, publicada pelo CI com `wrangler pages deploy`. Não existe Worker nem `wrangler.jsonc`.
+- Cloudflare Pages, um projeto por ambiente: push na `homolog` publica em `brindefly-partner-hml` (`brindefly-hml.veforma.com.br`) e push na `master` em `brindefly-partner` (`brindefly.veforma.com.br`). O build gera a pasta `out/`, publicada pelo CI com `wrangler pages deploy`. Não existe Worker nem `wrangler.jsonc`.
 - `next/image` com `images.unoptimized` (export estático não tem otimizador de imagem).
 - Cabeçalhos do Pages em `public/_headers`.
 - Variáveis públicas vão em `.env` (`NEXT_PUBLIC_*`, inlinadas no build). Não existem segredos de runtime: tudo que entra no build é público.
