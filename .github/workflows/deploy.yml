@@ -1,0 +1,51 @@
+name: Deploy · brindefly-partner
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'brindefly-partner/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-brindefly-partner
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: brindefly-partner
+
+jobs:
+  deploy:
+    name: Cloudflare Workers
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      HUSKY: 0
+      NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+      NEXT_PUBLIC_VEFORMA_CLIENT_API_URL: ${{ vars.NEXT_PUBLIC_VEFORMA_CLIENT_API_URL }}
+      NEXT_PUBLIC_BRINDEFLY_PANEL_URL: ${{ vars.NEXT_PUBLIC_BRINDEFLY_PANEL_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: brindefly-partner/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm exec opennextjs-cloudflare build
+
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: brindefly-partner
+          command: deploy
