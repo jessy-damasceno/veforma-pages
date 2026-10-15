@@ -1,27 +1,26 @@
 'use client'
 
-import { ArrowRight } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useBoolean } from 'usehooks-ts'
+import { type CSSProperties, useEffect, useState } from 'react'
 
-import { Button } from '@/components/ui/button'
 import { ACTIVATION_REDIRECT_COUNTDOWN_S } from '@/constants/connection'
 
 interface ActivationDoneProps {
   callbackUrl: string
 }
 
-// Conclusão: contagem regressiva para voltar ao painel Brindefly, com saída
-// imediata pelo botão e pausa pelo link. Única origem da navegação final.
+const RING_SIZE = 56
+const RING_STROKE = 4
+const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2
+const RING_LENGTH = 2 * Math.PI * RING_RADIUS
+
+// Conclusão: anel que esvazia em ACTIVATION_REDIRECT_COUNTDOWN_S segundos e
+// volta ao painel Brindefly. Única origem da navegação final.
 export function ActivationDone({ callbackUrl }: ActivationDoneProps) {
   const [secondsLeft, setSecondsLeft] = useState(
     ACTIVATION_REDIRECT_COUNTDOWN_S,
   )
-  const { value: isPaused, setTrue: pause } = useBoolean(false)
 
   useEffect(() => {
-    if (isPaused) return
-
     if (secondsLeft <= 0) {
       // Navegação de aba inteira: o callback da api-rest precisa do cookie
       // de sessão do painel Brindefly, que só vai em navegação, não em fetch.
@@ -32,32 +31,54 @@ export function ActivationDone({ callbackUrl }: ActivationDoneProps) {
     const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000)
 
     return () => clearTimeout(timer)
-  }, [secondsLeft, isPaused, callbackUrl])
-
-  function goNow() {
-    window.location.assign(callbackUrl)
-  }
+  }, [secondsLeft, callbackUrl])
 
   return (
-    <div className="mt-6 space-y-3">
-      <Button size="lg" className="w-full" onClick={goNow}>
-        Ir para o painel da Brindefly <ArrowRight aria-hidden />
-      </Button>
-      <p role="status" className="text-center text-muted-foreground text-xs">
-        {isPaused ? (
-          'Quando quiser, é só clicar no botão acima.'
-        ) : (
-          <>
-            Levando você de volta ao painel da Brindefly em {secondsLeft} s.{' '}
-            <button
-              type="button"
-              onClick={pause}
-              className="underline underline-offset-4 hover:text-foreground"
-            >
-              Esperar
-            </button>
-          </>
-        )}
+    <div
+      role="status"
+      className="mt-6 flex flex-col items-center gap-3 text-center"
+    >
+      <div className="relative grid place-items-center">
+        <svg
+          width={RING_SIZE}
+          height={RING_SIZE}
+          viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
+          className="-rotate-90"
+          aria-hidden
+        >
+          <circle
+            cx={RING_SIZE / 2}
+            cy={RING_SIZE / 2}
+            r={RING_RADIUS}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={RING_STROKE}
+            className="text-secondary"
+          />
+          <circle
+            cx={RING_SIZE / 2}
+            cy={RING_SIZE / 2}
+            r={RING_RADIUS}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={RING_STROKE}
+            strokeLinecap="round"
+            strokeDasharray={RING_LENGTH}
+            className="animate-countdown-ring text-primary"
+            style={
+              {
+                '--ring-length': RING_LENGTH,
+                animationDuration: `${ACTIVATION_REDIRECT_COUNTDOWN_S}s`,
+              } as CSSProperties
+            }
+          />
+        </svg>
+        <span className="absolute font-semibold text-sm tabular-nums">
+          {secondsLeft}
+        </span>
+      </div>
+      <p className="text-muted-foreground text-sm">
+        Voltando para o painel da Brindefly…
       </p>
     </div>
   )
