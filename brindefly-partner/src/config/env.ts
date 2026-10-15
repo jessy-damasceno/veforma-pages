@@ -4,8 +4,13 @@ import { z } from '@/lib/zod'
 // para o Next inliná-las no bundle do cliente.
 const envSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.url(),
+  NEXT_PUBLIC_VEFORMA_CLIENT_API_URL: z.url(),
+  NEXT_PUBLIC_BRINDEFLY_PANEL_URL: z.url(),
 })
 
 export const env = envSchema.parse({
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_VEFORMA_CLIENT_API_URL:
+    process.env.NEXT_PUBLIC_VEFORMA_CLIENT_API_URL,
+  NEXT_PUBLIC_BRINDEFLY_PANEL_URL: process.env.NEXT_PUBLIC_BRINDEFLY_PANEL_URL,
 })

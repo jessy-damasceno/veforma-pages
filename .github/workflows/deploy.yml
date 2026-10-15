@@ -24,6 +24,8 @@ jobs:
     env:
       HUSKY: 0
       NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+      NEXT_PUBLIC_VEFORMA_CLIENT_API_URL: ${{ vars.NEXT_PUBLIC_VEFORMA_CLIENT_API_URL }}
+      NEXT_PUBLIC_BRINDEFLY_PANEL_URL: ${{ vars.NEXT_PUBLIC_BRINDEFLY_PANEL_URL }}
     steps:
       - uses: actions/checkout@v4
 
