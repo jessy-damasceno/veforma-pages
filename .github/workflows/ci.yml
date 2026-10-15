@@ -26,6 +26,8 @@ jobs:
     env:
       HUSKY: 0
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_VEFORMA_CLIENT_API_URL: https://api-client-hml.veforma.com.br
+      NEXT_PUBLIC_BRINDEFLY_PANEL_URL: http://localhost:5173
     steps:
       - uses: actions/checkout@v4
 

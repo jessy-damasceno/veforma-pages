@@ -43,6 +43,14 @@
       }
     }
   },
+  "overrides": [
+    {
+      "includes": ["src/http/veforma-client-api/**"],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ],
   "linter": {
     "enabled": true,
     "domains": {

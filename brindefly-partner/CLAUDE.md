@@ -4,9 +4,13 @@ Landing page e fluxo de conexão do aplicativo **Veforma** na loja de aplicativo
 
 Repositório `vorisc/veforma-pages` (GitHub); este projeto vive em `brindefly-partner/`. O git fica na raiz do repo.
 
+## Leia antes de planejar ou implementar
+
+Ordem de leitura em [`docs/`](docs/): [README](docs/README.md) → [01-contexto-e-fluxo](docs/01-contexto-e-fluxo.md) → [02-apis-veforma](docs/02-apis-veforma.md) → [03-telas](docs/03-telas.md) → [04-decisoes-e-pendencias](docs/04-decisoes-e-pendencias.md). O fluxo ponta a ponta, os endpoints da client-api, as telas do protótipo e as pendências P1–P10 estão lá; não repropor o que 04 já trava. Specs aprovados em `docs/superpowers/specs/`.
+
 ## Stack
 
-Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Tailwind 4 (`@tailwindcss/turbopack`) + shadcn (radix, new-york) · lucide-react · Zod 4 · Biome · pnpm · Cloudflare Workers via `@opennextjs/cloudflare` + wrangler.
+Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Tailwind 4 (`@tailwindcss/turbopack`) + shadcn (radix, new-york) · lucide-react · Zod 4 · Biome · pnpm · site estático (`output: 'export'`) no Cloudflare Pages.
 
 ## Convenções herdadas da Brindefly
 
@@ -14,13 +18,15 @@ Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Tailwind 
 - Named exports (páginas e layouts do App Router são a exceção: `export default`); props com `interface`; `import type`; `??` em vez de `||`; `as const` em vez de enum; sem `any`.
 - Ordem no componente: hooks → queries/mutations → form → memos → funções → constantes derivadas. Sub-componente que cresce vira pasta com `index.tsx`.
 - Zod importado de `@/lib/zod` (error map pt-BR); `cn` em `@/utils/cn`; constantes usadas por 2+ arquivos em `@/constants`; tipos compartilhados em `@/@types/<dominio>.ts`; env pública em `@/config/env`.
+- Hooks de API vêm do Kubb (`src/http/veforma-client-api`, `pnpm kb:generate`, config igual à do panel-admin: wrapper `src/lib/kubb.ts` com query keys por recurso, `barrelType: 'named'`, hooks suspense), com TanStack Query e axios (`src/http/api-client.ts`). Erros da Veforma passam por `@/utils/error-handler`.
 - Booleanos de UI com `useBoolean` (usehooks-ts), não `useState(false)`.
 - Código em inglês; UI, docs e commits (descrição) em português quando fizer sentido; mensagem de commit em inglês.
 
 ## Estrutura (App Router)
 
 - `src/app/layout.tsx`: html, fonte (`next/font`), `globals.css`, metadata base.
-- Uma pasta `(grupo)/` por fluxo com seu próprio `layout.tsx`: `(landing)/` é a landing com os planos. Checkout/retorno e configuração entram como novos grupos.
+- Uma pasta `(grupo)/` por fluxo com seu próprio `layout.tsx`.
+- `(connect)/` é o fluxo 02 (Aquisição): `conectar/` é a landing com os planos e `conectar/ativacao/` a confirmação. A regra "status → rota" fica em `(connect)/_lib/route-for-status.ts` e o hook de status em `hooks/use-connection-request.ts`; não duplicar.
 - Componentes locais de uma página ficam em `_components/` ao lado dela (pasta privada do Next, equivalente ao `-components` do TanStack Router na Brindefly). Componentes compartilhados em `src/components/<feature>/`; shadcn em `src/components/ui/`.
 - Server Components por padrão; `'use client'` só onde há interação.
 - `pnpm dlx shadcn@latest add <comp>` gera `import { cn } from "cn"` (o CLI não respeita o alias `@/utils/cn`). Corrigir para `@/utils/cn` e rodar `pnpm lint:check` para formatar.
