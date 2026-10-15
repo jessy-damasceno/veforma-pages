@@ -1,17 +1,3 @@
-export type PlanFeatureKey =
-  | 'integration'
-  | 'models'
-  | 'views'
-  | 'metrics'
-  | 'augmented-reality'
-  | 'campaign-links'
-  | 'print-type-preview'
-  | 'priority-queue'
+import type { FetchPlans200 } from '@/http/veforma-client-api'
 
-export interface Plan {
-  name: string
-  monthlyPrice: number
-  monthlyViews: string
-  includedFeatures: PlanFeatureKey[]
-  isFeatured?: boolean
-}
+export type Plan = FetchPlans200['plans'][number]

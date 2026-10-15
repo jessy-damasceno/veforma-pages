@@ -1,55 +1,88 @@
+import { LoaderCircleIcon } from 'lucide-react'
 import Image from 'next/image'
 import type { ComponentProps } from 'react'
 
-import type { Plan, PlanFeatureKey } from '@/@types/plan'
+import type { Plan } from '@/@types/plan'
+import { PLAN_FEATURES, type PlanFeature } from '@/constants/plans'
 import { cn } from '@/utils/cn'
-
-interface PlanFeature {
-  key: PlanFeatureKey
-  label: string
-  hint?: string
-  badgeClassName?: string
-}
-
-const PLAN_FEATURES: PlanFeature[] = [
-  { key: 'integration', label: '3D integrado à Brindefly' },
-  {
-    key: 'models',
-    label: 'Modelos disponíveis',
-    badgeClassName: '-top-px right-4.5 w-21.75 sm:right-14',
-  },
-  {
-    key: 'views',
-    label: 'Views por mês',
-    hint: 'R$ 0,02 por view extra',
-    badgeClassName: 'top-1.75 right-12 w-16 sm:right-22.25',
-  },
-  { key: 'metrics', label: 'Métricas de engajamento' },
-  { key: 'augmented-reality', label: 'Realidade aumentada' },
-  { key: 'campaign-links', label: 'Links e QR Codes para campanhas' },
-  { key: 'print-type-preview', label: 'Visualização por tipo de impressão' },
-  { key: 'priority-queue', label: 'Lista de prioridade para novos modelos' },
-]
+import { formatCompactLimit, formatCurrencyFromCents } from '@/utils/formatters'
 
 const DEPTH_SHADOW_CLASS_NAME =
   'shadow-[0_87.56px_83.83px_-37.26px_rgba(22,39,82,.5),inset_1.86px_2.79px_1.86px_rgba(255,255,255,.1),inset_0_-2.79px_1.86px_rgba(52,127,252,.1)]'
 
-function getFeatureBadge(key: PlanFeatureKey, plan: Plan) {
-  if (key === 'models') return 'ilimitado'
-  if (key === 'views') return plan.monthlyViews
+// Posição da pílula em px do Figma: na linha com nota ela desce e encolhe.
+const BADGE_CLASS_NAME = '-top-px right-4.5 w-21.75 sm:right-14'
+const BADGE_WITH_NOTE_CLASS_NAME = 'top-1.75 right-12 w-16 sm:right-22.25'
 
-  return null
+type PlanLimitKey = Extract<PlanFeature, { kind: 'limit' }>['limit']
+
+// O layout só tem espaço para o selo nas linhas curtas ("Modelos disponíveis"
+// e "Views por mês"). Nos outros limites a quantidade vai para a nota.
+const BADGE_LIMITS: readonly PlanLimitKey[] = ['monthlyViews']
+
+interface FeatureState {
+  isIncluded: boolean
+  badge: string | null
+  note?: string
+}
+
+// Regras de constants/plans.ts: em `limits`, 0 = não incluso e null =
+// ilimitado; em `availability`, texto vira o selo à direita. A nota explica o
+// que vem incluso, então some no item riscado.
+function getFeatureState(feature: PlanFeature, plan: Plan): FeatureState {
+  if (feature.kind === 'flag') {
+    const availability = feature.availability[plan.slug]
+    const isIncluded = availability !== false
+
+    return {
+      isIncluded,
+      badge: typeof availability === 'string' ? availability : null,
+      note: isIncluded ? feature.note : undefined,
+    }
+  }
+
+  const value = plan.limits[feature.limit]
+
+  if (value === 0) return { isIncluded: false, badge: null }
+
+  if (BADGE_LIMITS.includes(feature.limit)) {
+    return {
+      isIncluded: true,
+      badge: formatCompactLimit(value),
+      note: feature.note,
+    }
+  }
+
+  // Ex.: "5 pedidos de modelos incluídos". Ilimitado fica implícito no check.
+  const note =
+    value !== null && feature.note
+      ? `${formatCompactLimit(value)} ${feature.note}`
+      : feature.note
+
+  return { isIncluded: true, badge: null, note }
 }
 
 interface PlanCardProps extends ComponentProps<'article'> {
   plan: Plan
+  isFeatured: boolean
+  isSelecting: boolean
+  isDisabled: boolean
+  onSelect: () => void
 }
 
 // Card de preço: cabeçalho 382x158 (preço) + corpo 382x475 (itens + botão),
 // com tudo posicionado em px do Figma. O plano em destaque ganha o gradiente
 // da marca e borda azul.
-export function PlanCard({ plan, className, ...props }: PlanCardProps) {
-  const { name, monthlyPrice, includedFeatures, isFeatured } = plan
+export function PlanCard({
+  plan,
+  isFeatured,
+  isSelecting,
+  isDisabled,
+  onSelect,
+  className,
+  ...props
+}: PlanCardProps) {
+  const { name, priceInCents, trialDays } = plan
 
   return (
     <article className={cn('relative', className)} {...props}>
@@ -68,14 +101,16 @@ export function PlanCard({ plan, className, ...props }: PlanCardProps) {
           {name}
         </h3>
         <p className="absolute top-17.25 left-6 flex items-center gap-2 whitespace-nowrap font-semibold text-[34px] leading-7.25 tracking-[-1.11px] sm:left-7.75 sm:text-[37px]">
-          R$ {monthlyPrice}
+          {formatCurrencyFromCents(priceInCents)}
           <span className="relative top-1 font-normal text-sm tracking-[-0.14px]">
             /mês
           </span>
         </p>
-        <p className="absolute top-26.5 left-6 whitespace-nowrap text-sm leading-7.25 tracking-[-0.14px] sm:left-7.75">
-          Teste grátis por 14 dias
-        </p>
+        {trialDays > 0 && (
+          <p className="absolute top-26.5 left-6 whitespace-nowrap text-sm leading-7.25 tracking-[-0.14px] sm:left-7.75">
+            Teste grátis por {trialDays} dias
+          </p>
+        )}
         <Image
           src="/static/landing/05-planos/icon-ar.svg"
           alt=""
@@ -95,16 +130,15 @@ export function PlanCard({ plan, className, ...props }: PlanCardProps) {
         )}
       >
         <ul>
-          {PLAN_FEATURES.map(({ key, label, hint, badgeClassName }) => {
-            const isIncluded = includedFeatures.includes(key)
-            const badge = getFeatureBadge(key, plan)
+          {PLAN_FEATURES.map((feature) => {
+            const { isIncluded, badge, note } = getFeatureState(feature, plan)
 
             return (
               <li
-                key={key}
+                key={feature.label}
                 className={cn(
                   'relative mb-4.5 flex min-h-5.5 items-start gap-2 font-medium text-[13.5px] leading-3.5 sm:text-sm',
-                  hint && 'min-h-9',
+                  note && 'min-h-9',
                 )}
               >
                 <Image
@@ -119,10 +153,10 @@ export function PlanCard({ plan, className, ...props }: PlanCardProps) {
                   className="size-5.5 shrink-0"
                 />
                 <span className="pt-1">
-                  {label}
-                  {hint && (
+                  {feature.label}
+                  {note && (
                     <small className="mt-1 block font-medium text-[#c3c3c3] text-xs leading-3.5">
-                      {hint}
+                      {note}
                     </small>
                   )}
                 </span>
@@ -131,7 +165,7 @@ export function PlanCard({ plan, className, ...props }: PlanCardProps) {
                   <span
                     className={cn(
                       'absolute flex h-7 items-center justify-center rounded-[60px] border border-black font-semibold text-[11px] text-black tracking-[-0.11px]',
-                      badgeClassName,
+                      note ? BADGE_WITH_NOTE_CLASS_NAME : BADGE_CLASS_NAME,
                     )}
                   >
                     {badge}
@@ -142,26 +176,35 @@ export function PlanCard({ plan, className, ...props }: PlanCardProps) {
           })}
         </ul>
 
-        {/* TODO: abrir o checkout do Stripe (link gerado pela API existente) */}
         <button
           type="button"
+          disabled={isDisabled}
+          aria-busy={isSelecting}
+          onClick={onSelect}
           className={cn(
-            'absolute top-97.5 left-1/2 ml-[-162.5px] flex h-14.5 w-81.25 items-center gap-[8.6px] whitespace-nowrap rounded-[20px] pl-20.75 font-bold text-sm text-white tracking-[-0.14px] transition-[translate,filter] duration-300 hover:-translate-y-0.5 sm:left-7.75 sm:ml-0',
+            'absolute top-97.5 left-1/2 ml-[-162.5px] flex h-14.5 w-81.25 items-center gap-[8.6px] whitespace-nowrap rounded-[20px] pl-20.75 font-bold text-sm text-white tracking-[-0.14px] transition-[translate,filter,opacity] duration-300 enabled:hover:-translate-y-0.5 disabled:opacity-70 sm:left-7.75 sm:ml-0',
             isFeatured
-              ? 'top-97 ml-[-164.5px] bg-brand-gradient hover:brightness-110 sm:left-7.25'
+              ? 'top-97 ml-[-164.5px] bg-brand-gradient enabled:hover:brightness-110 sm:left-7.25'
               : cn(
-                  'bg-[#1f1f1f] hover:brightness-125',
+                  'bg-[#1f1f1f] enabled:hover:brightness-125',
                   DEPTH_SHADOW_CLASS_NAME,
                 ),
           )}
         >
-          <Image
-            src="/static/landing/05-planos/icon-btn-check.svg"
-            alt=""
-            width={29}
-            height={24}
-            className="mt-[3.2px] h-[24.1px] w-[28.6px] shrink-0"
-          />
+          {isSelecting ? (
+            <LoaderCircleIcon
+              aria-hidden="true"
+              className="h-[24.1px] w-[28.6px] shrink-0 animate-spin"
+            />
+          ) : (
+            <Image
+              src="/static/landing/05-planos/icon-btn-check.svg"
+              alt=""
+              width={29}
+              height={24}
+              className="mt-[3.2px] h-[24.1px] w-[28.6px] shrink-0"
+            />
+          )}
           Testar grátis
         </button>
       </div>
