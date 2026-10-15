@@ -12,9 +12,21 @@ const CATALOG_BENEFITS = [
   'Vê o produto em realidade aumentada, pelo celular',
 ]
 
-const SHARE_CHANNELS = [
+// Onde o lojista usa o QR Code de cada produto.
+const QR_CODE_CHANNELS = [
   {
-    label: 'WhatsApp',
+    label: 'Catálogos em PDF',
+    icon: (
+      <>
+        <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
+        <path d="M14 3v5h5" />
+        <path d="M9 13h6" />
+        <path d="M9 17h6" />
+      </>
+    ),
+  },
+  {
+    label: 'WhatsApp e e-mail',
     icon: (
       <>
         <path d="M20 11.5a8 8 0 0 1-11.9 7L4 20l1.5-4A8 8 0 1 1 20 11.5Z" />
@@ -23,16 +35,7 @@ const SHARE_CHANNELS = [
     ),
   },
   {
-    label: 'E-mail',
-    icon: (
-      <>
-        <rect x="3" y="5" width="18" height="14" rx="3" />
-        <path d="m4 7.5 8 6 8-6" />
-      </>
-    ),
-  },
-  {
-    label: 'Campanhas impressas',
+    label: 'Materiais impressos',
     icon: (
       <>
         <path d="M7 9V3h10v6" />
@@ -43,9 +46,8 @@ const SHARE_CHANNELS = [
   },
 ]
 
-// Recurso da parceria com a Brindefly: o catálogo em PDF sai do catálogo/loja
-// Brindefly do cliente (qualquer plano, com ou sem preços) e cada produto ganha
-// um QR Code que abre o visualizador 3D. Não dizer "sem loja virtual".
+// A Veforma gera um QR Code para cada produto, que o lojista coloca no próprio
+// catálogo (PDF ou impresso) e o cliente abre no visualizador 3D.
 // No fundo, a última camada funde tudo em branco antes da borda de baixo: o
 // bloco seguinte (Planos) é branco e o brilho do canto apareceria cortado.
 export function Catalog() {
@@ -103,10 +105,10 @@ export function Catalog() {
 
             <div data-scrub="up" className="mt-8.5">
               <p className="font-semibold text-[#6b6b80] text-[13px] uppercase tracking-[1.4px]">
-                Envie o catálogo por
+                Use nos seus
               </p>
               <ul className="mt-3 flex flex-wrap gap-2.5">
-                {SHARE_CHANNELS.map(({ label, icon }) => (
+                {QR_CODE_CHANNELS.map(({ label, icon }) => (
                   <li
                     key={label}
                     className="inline-flex h-10 items-center gap-2 rounded-[30px] border border-black/10 bg-white/75 pr-4.5 pl-3.5 font-semibold text-foreground text-sm tracking-[-0.14px] backdrop-blur-sm sm:h-10.5"
