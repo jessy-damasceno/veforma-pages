@@ -1,0 +1,49 @@
+name: CI · brindefly-partner
+
+on:
+  pull_request:
+    paths:
+      - 'brindefly-partner/**'
+      - '.github/workflows/ci.yml'
+  push:
+    branches: [master, develop, homolog]
+    paths:
+      - 'brindefly-partner/**'
+      - '.github/workflows/ci.yml'
+
+concurrency:
+  group: ci-brindefly-partner-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: brindefly-partner
+
+jobs:
+  check:
+    name: lint · typecheck · build
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: 0
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: brindefly-partner/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint
+
+      - run: pnpm typecheck
+
+      # Valida também o bundle do Worker, não só o `next build`.
+      - run: pnpm exec opennextjs-cloudflare build

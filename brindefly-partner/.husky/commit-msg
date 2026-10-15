@@ -1,0 +1,2 @@
+#!/bin/sh
+sh brindefly-partner/.husky/validate-commit-msg.sh "$1"
