@@ -84,7 +84,7 @@ No protótipo a animação é um timer (1,3 s por etapa). O comentário do próp
 | 5 Ativando a realidade aumentada | cosmética; concluir junto com a 4 |
 | 6 Finalizando a configuração | `COMPLETED` (resposta do `complete`) e redirect |
 
-**O que muda em relação ao protótipo (decisão de 15/10):** não existe o botão "Acessar painel Veforma". Ao concluir, a tela chama `complete` e redireciona o brindeiro para o `callbackUrl` na mesma aba; ele termina na página do app Veforma dentro do painel Brindefly. O estado "Concluído" vira, no máximo, um instante de "Tudo pronto, voltando para a Brindefly…" antes do redirect. O rodapé "Enviamos todas informações para o seu e-mail" depende de a Veforma mandar esse e-mail (P8).
+**O que muda em relação ao protótipo (decisão de 15/10):** não existe o botão "Acessar painel Veforma". Ao concluir, a tela chama `complete` e mostra o estado "Tudo pronto" com o botão "Ir para o painel da Brindefly" e uma contagem de 10 s (com "Esperar" para pausar); ao zerar ou ao clicar, navega para o `callbackUrl` na mesma aba e o brindeiro termina na página do app Veforma dentro do painel Brindefly. O rodapé "Enviamos todas informações para o seu e-mail" depende de a Veforma mandar esse e-mail (P8).
 
 **Estados que o protótipo não tem e a API exige:**
 

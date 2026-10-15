@@ -148,7 +148,8 @@ CORS da client-api para a nossa origem (P3), Stripe em modo teste na hml (P10, R
 Desvios aceitos em relação ao texto acima:
 
 - `QueryProvider` e `Toaster` ficam no layout raiz (`src/app/layout.tsx`), não no `(connect)/layout.tsx`; o gate vive em `src/app/(connect)/_components/`.
-- "Tudo pronto! A Veforma já está ativa" só aparece depois que as seis etapas foram reveladas, e o redirect sai `ACTIVATION_REDIRECT_DELAY_MS` depois disso.
+- **Conclusão com contagem regressiva** (teste de 15/10: o redirect imediato era rápido demais). Etapas a `ACTIVATION_STEP_MIN_VISIBLE_MS` = 1,2 s cada; ao revelar as seis, o card mostra ícone de sucesso, "Tudo pronto! A Veforma já está ativa", "O 3D já pode ser usado nas páginas dos seus produtos", botão "Ir para o painel da Brindefly" e a contagem `ACTIVATION_REDIRECT_COUNTDOWN_S` = 10 s com o link "Esperar", que pausa. A navegação final (`window.location.assign(callbackUrl)`) vive só em `activation-done.tsx`. O código de troca vale 10 min, então pausar é seguro.
+- **`success_url` da Veforma volta para a raiz** (`/?linkToken=`): `/` repassa a query para `/conectar` e o gate manda para `/conectar/ativacao`. Dois redirects, nenhum código extra.
 - **Depois de pedir o `complete`, a tela para de consultar o status** e nada vindo da consulta pode desmontar o card (um 404/410 para pedido `COMPLETED` perderia o `callbackUrl` de uso único). O `callbackUrl` vem direto do `data` da mutation.
 - Páginas restauradas do back-forward cache (Voltar a partir do Stripe ou do painel) recarregam (`useReloadOnBfcacheRestore`), para o estado React não voltar congelado.
 - O gate só mostra erro quando não há dado em cache (`isError && !connectionRequest`); um refetch de fundo que falha não substitui a landing.
