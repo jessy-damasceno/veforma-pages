@@ -24,13 +24,14 @@ Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Tailwind 
 - Componentes locais de uma página ficam em `_components/` ao lado dela (pasta privada do Next, equivalente ao `-components` do TanStack Router na Brindefly). Componentes compartilhados em `src/components/<feature>/`; shadcn em `src/components/ui/`.
 - Server Components por padrão; `'use client'` só onde há interação.
 - `pnpm dlx shadcn@latest add <comp>` gera `import { cn } from "cn"` (o CLI não respeita o alias `@/utils/cn`). Corrigir para `@/utils/cn` e rodar `pnpm lint:check` para formatar.
-- Não usar `export const runtime = 'edge'` (OpenNext roda tudo no runtime Node do Workers).
+- O site é **exportado estático** (`output: 'export'`) e publicado no Cloudflare Pages: nada de rotas de API (`route.ts`), server actions, middleware, `cookies()`/`headers()` nem renderização por requisição. Dados da API (ex.: o `?linkToken` da página de conexão) são lidos e buscados no navegador, em componente `'use client'` (`useSearchParams` dentro de `<Suspense>`).
 
 ## Cloudflare
 
-- `wrangler.jsonc` sem R2/ISR e sem binding `images`: a landing é estática. `next/image` usa o loader padrão do Next; se o volume de imagens crescer, ligar o binding `images` e o cache em `open-next.config.ts`.
-- `cacheComponents` desligado por ora (não validado com o adapter).
-- Variáveis públicas vão em `.env` (`NEXT_PUBLIC_*`, inlinadas no build). Segredos de runtime, quando existirem, vão em `.dev.vars` local e em `wrangler secret` na nuvem.
+- Cloudflare Pages, projeto `brindefly-partner-hml` (domínio `brindefly-hml.veforma.com.br`). O build gera a pasta `out/`, publicada pelo CI com `wrangler pages deploy`. Não existe Worker nem `wrangler.jsonc`.
+- `next/image` com `images.unoptimized` (export estático não tem otimizador de imagem).
+- Cabeçalhos do Pages em `public/_headers`.
+- Variáveis públicas vão em `.env` (`NEXT_PUBLIC_*`, inlinadas no build). Não existem segredos de runtime: tudo que entra no build é público.
 
 ## Versionamento
 
@@ -45,5 +46,5 @@ O `next dev` mantém um bloco gerenciado em `AGENTS.md` (commitado) mandando ler
 ## Regras de trabalho
 
 - **Nunca** `git commit`, `git push`, `git merge` ou criar PR; o dev commita manualmente. Ler com `git status`/`git diff` é livre.
-- Nunca rodar `pnpm deploy` nem `wrangler deploy` manualmente; o deploy sai do CI.
+- Nunca rodar `wrangler pages deploy` manualmente; o deploy sai do CI.
 - Toda proposta passa por auto-auditoria antes de ser apresentada: (1) cria segunda fonte da verdade? (2) decisões combinadas geram incoerência? (3) existe caminho mais simples?

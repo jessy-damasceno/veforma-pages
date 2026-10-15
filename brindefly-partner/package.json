@@ -15,10 +15,6 @@
     "lint": "biome lint .",
     "lint:format": "biome format --write .",
     "lint:check": "biome check --write .",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
     "prepare": "cd .. && husky brindefly-partner/.husky"
   },
   "lint-staged": {
@@ -27,7 +23,6 @@
     ]
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "1.20.12",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cn": "0.4.0",
@@ -50,7 +45,6 @@
     "husky": "9.1.7",
     "lint-staged": "17.6.0",
     "tailwindcss": "4.3.3",
-    "typescript": "6.0.3",
-    "wrangler": "4.151.0"
+    "typescript": "6.0.3"
   }
 }

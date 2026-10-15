@@ -2,7 +2,7 @@
 
 Landing page e fluxo de conexão do aplicativo **Veforma** na loja de aplicativos da Brindefly: o lojista chega aqui vindo do painel, escolhe um plano, paga no Stripe e volta para configurar a integração.
 
-Next.js (App Router) hospedado em **Cloudflare Workers** via `@opennextjs/cloudflare`.
+Next.js (App Router) exportado como site estático (`output: 'export'`) e hospedado no **Cloudflare Pages**.
 
 ## Rodar local
 
@@ -20,9 +20,6 @@ Se o seu shell exporta variáveis do monorepo da Brindefly (`PORT=3333`, `NODE_E
 | `build` | `next build` |
 | `typecheck` | `tsc --noEmit` |
 | `lint` / `lint:format` / `lint:check` | Biome (lint · format · check com fix) |
-| `preview` | Build OpenNext + roda o Worker local com wrangler |
-| `deploy` | Build OpenNext + `wrangler deploy` |
-| `cf-typegen` | Gera `cloudflare-env.d.ts` a partir do `wrangler.jsonc` |
 
 ## Estrutura
 
@@ -53,8 +50,8 @@ Branch por task `tipo/DEV-1234-descricao-curta`; commit `tipo(DEV-1234): mensage
 
 O git fica na raiz do repositório (`veforma-pages`), por isso o `prepare` instala os hooks com `husky brindefly-partner/.husky`.
 
-## Deploy (Cloudflare Workers)
+## Deploy (Cloudflare Pages)
 
-- `wrangler.jsonc` define o Worker `brindefly-partner` (sem R2/ISR por enquanto; a landing é estática).
-- CI em `.github/workflows/ci.yml` roda lint, typecheck e build OpenNext em PRs e nas branches principais.
-- Deploy em `.github/workflows/deploy.yml` no push para `master`; exige os secrets `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID` e a variável `NEXT_PUBLIC_SITE_URL` no repositório.
+- `next build` gera o site estático em `out/` (sem rotas de API, server actions nem middleware).
+- CI em `.github/workflows/ci.yml` roda lint, typecheck e build em PRs e nas branches principais.
+- Deploy em `.github/workflows/deploy.yml` no push para `master`: publica `out/` no projeto do Pages `brindefly-partner-hml` (`https://brindefly-hml.veforma.com.br`). Usa o environment `hml` (variables `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_API_URL` e `CLOUDFLARE_PAGES_PROJECT`) e os secrets `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID`.

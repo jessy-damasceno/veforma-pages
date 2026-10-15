@@ -1,10 +1,8 @@
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
 import type { NextConfig } from 'next'
 
-// Expõe o contexto do Cloudflare (bindings, env) durante o `next dev`.
-initOpenNextCloudflareForDev()
-
 const nextConfig: NextConfig = {
+  output: 'export',
+  images: { unoptimized: true },
   reactStrictMode: true,
   turbopack: {
     rules: {

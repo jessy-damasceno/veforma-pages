@@ -18,12 +18,13 @@ defaults:
 
 jobs:
   deploy:
-    name: Cloudflare Workers
+    name: Cloudflare Pages (hml)
     runs-on: ubuntu-latest
-    environment: production
+    environment: hml
     env:
       HUSKY: 0
       NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+      NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -39,11 +40,16 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm exec opennextjs-cloudflare build
+      - run: pnpm build
 
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 4.151.0
           workingDirectory: brindefly-partner
-          command: deploy
+          command: >-
+            pages deploy out
+            --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+            --branch=master
+            --commit-hash=${{ github.sha }}
