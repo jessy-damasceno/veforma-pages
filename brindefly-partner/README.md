@@ -4,6 +4,10 @@ Landing page e fluxo de conexão do aplicativo **Veforma** na loja de aplicativo
 
 Next.js (App Router) hospedado em **Cloudflare Workers** via `@opennextjs/cloudflare`.
 
+## Contexto
+
+Fluxo ponta a ponta, APIs da Veforma, telas e pendências em [`docs/`](docs/README.md). Leia antes de implementar.
+
 ## Rodar local
 
 1. `cp .env.example .env`
@@ -22,6 +26,7 @@ Se o seu shell exporta variáveis do monorepo da Brindefly (`PORT=3333`, `NODE_E
 | `lint` / `lint:format` / `lint:check` | Biome (lint · format · check com fix) |
 | `preview` | Build OpenNext + roda o Worker local com wrangler |
 | `deploy` | Build OpenNext + `wrangler deploy` |
+| `kb:generate` | Regenera `src/http/veforma-client-api` a partir de `${NEXT_PUBLIC_VEFORMA_CLIENT_API_URL}/docs/openapi.json` (lê o `.env`) |
 | `cf-typegen` | Gera `cloudflare-env.d.ts` a partir do `wrangler.jsonc` |
 
 ## Estrutura
@@ -29,23 +34,32 @@ Se o seu shell exporta variáveis do monorepo da Brindefly (`PORT=3333`, `NODE_E
 ```
 src/
   app/
-    layout.tsx            html lang pt-BR, fonte, globals.css, metadata
+    layout.tsx                      html lang pt-BR, fonte, globals.css, QueryProvider, Toaster
+    page.tsx                        "/" → /conectar
     not-found.tsx
-    (landing)/            landing page ("/") com os planos
-      layout.tsx          header/footer da landing
-      page.tsx
-      _components/        componentes locais da landing
-  components/ui/          shadcn
-  config/env.ts           variáveis públicas validadas com Zod
-  constants/              valores usados por 2+ arquivos (site.ts)
-  hooks/
-  lib/zod.ts              Zod com mensagens pt-BR (importar daqui, não de 'zod')
-  utils/cn.ts
-  styles/globals.css      Tailwind 4 + tokens do shadcn
-  @types/
+    (connect)/                      fluxo 02 · Aquisição
+      layout.tsx                    fundo neutro do fluxo
+      _lib/route-for-status.ts      regra única: status → rota
+      _components/                  connection-gate, invalid-link, error-card
+      conectar/                     landing com os planos ("/conectar?linkToken=")
+        _components/                hero, planos, checkout (Jessy)
+        ativacao/                   confirmação ("/conectar/ativacao?linkToken=", success_url do Stripe)
+          _components/              progresso, etapas, falha, concluído
+          _lib/activation-steps.ts  status → etapas (função pura)
+  components/brand/                 selo Brindefly + Veforma
+  components/providers/             QueryProvider
+  components/ui/                    shadcn + sonner
+  config/env.ts                     NEXT_PUBLIC_* validadas com Zod
+  constants/                        connection (status, etapas, polling), plans (recursos), site
+  hooks/use-connection-request.ts   hook único de status (polling opcional)
+  http/api-client.ts                axios para a client-api da Veforma
+  http/veforma-client-api/          Kubb (pnpm kb:generate) — não editar
+  lib/kubb.ts                       wrapper do plugin react-query (query keys por recurso), igual ao panel-admin
+  lib/                              zod (pt-BR), react-query
+  styles/globals.css                Tailwind 4 + tokens da Veforma
+  utils/                            cn, error-handler, formatters
+  @types/connection.ts
 ```
-
-Páginas futuras (retorno do checkout, configuração da integração) entram como novos route groups ao lado de `(landing)`.
 
 ## Versionamento
 
@@ -55,6 +69,6 @@ O git fica na raiz do repositório (`veforma-pages`), por isso o `prepare` insta
 
 ## Deploy (Cloudflare Workers)
 
-- `wrangler.jsonc` define o Worker `brindefly-partner` (sem R2/ISR por enquanto; a landing é estática).
+- `wrangler.jsonc` define o Worker `brindefly-partner` (sem R2/ISR por enquanto; as páginas são prerenderizadas e todo dado vem do navegador).
 - CI em `.github/workflows/ci.yml` roda lint, typecheck e build OpenNext em PRs e nas branches principais.
 - Deploy em `.github/workflows/deploy.yml` no push para `master`; exige os secrets `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID` e a variável `NEXT_PUBLIC_SITE_URL` no repositório.

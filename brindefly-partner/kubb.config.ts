@@ -6,7 +6,10 @@ import { reactQueryPlugin } from './src/lib/kubb'
 
 process.loadEnvFile()
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_VEFORMA_CLIENT_API_URL
+// Com o proxy de dev ligado, o spec vem do alvo real, não de /veforma-api.
+const apiBaseUrl =
+  process.env.VEFORMA_CLIENT_API_PROXY_TARGET ??
+  process.env.NEXT_PUBLIC_VEFORMA_CLIENT_API_URL
 
 export default defineConfig([
   {
