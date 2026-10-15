@@ -19,7 +19,7 @@ export const CHECKOUT_CONFIRMATION_GRACE_MS = 60_000
 export const CONNECTION_POLLING_FAILURES_BEFORE_WARNING = 3
 export const ACTIVATION_STEP_MIN_VISIBLE_MS = 1200
 /** Contagem regressiva antes de voltar ao painel Brindefly (o código de troca vale 10 min). */
-export const ACTIVATION_REDIRECT_COUNTDOWN_S = 10
+export const ACTIVATION_REDIRECT_COUNTDOWN_S = 5
 
 export const LINK_TOKEN_PARAM = 'linkToken'
 

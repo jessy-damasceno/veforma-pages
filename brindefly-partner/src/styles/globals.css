@@ -56,6 +56,21 @@
   --brindefly: #083fc9;
 }
 
+/* Anel da contagem regressiva da ativação: esvazia no tempo da animação. */
+@keyframes countdown-ring {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: var(--ring-length);
+  }
+}
+
+/* --ring-length vem do componente (perímetro do círculo). */
+@utility animate-countdown-ring {
+  animation: countdown-ring linear forwards;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
