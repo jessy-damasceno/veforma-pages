@@ -1,8 +1,4 @@
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
 import type { NextConfig } from 'next'
-
-// Expõe o contexto do Cloudflare (bindings, env) durante o `next dev`.
-initOpenNextCloudflareForDev()
 
 // Desenvolvimento local: a client-api de hml só libera CORS para o host de hml.
 // Com VEFORMA_CLIENT_API_PROXY_TARGET no .env, /veforma-api/* é repassado pelo
@@ -10,6 +6,8 @@ initOpenNextCloudflareForDev()
 const proxyTarget = process.env.VEFORMA_CLIENT_API_PROXY_TARGET
 
 const nextConfig: NextConfig = {
+  output: 'export',
+  images: { unoptimized: true },
   reactStrictMode: true,
   async rewrites() {
     if (!proxyTarget) return []

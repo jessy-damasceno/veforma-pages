@@ -47,5 +47,4 @@ jobs:
 
       - run: pnpm typecheck
 
-      # Valida também o bundle do Worker, não só o `next build`.
-      - run: pnpm exec opennextjs-cloudflare build
+      - run: pnpm build

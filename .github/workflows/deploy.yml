@@ -2,14 +2,20 @@ name: Deploy · brindefly-partner
 
 on:
   push:
-    branches: [master]
+    branches: [homolog, master]
     paths:
       - 'brindefly-partner/**'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Ambiente de destino
+        type: choice
+        options: [hml, production]
+        default: hml
 
 concurrency:
-  group: deploy-brindefly-partner
+  group: deploy-brindefly-partner-${{ github.ref }}
   cancel-in-progress: false
 
 defaults:
@@ -17,10 +23,43 @@ defaults:
     working-directory: brindefly-partner
 
 jobs:
-  deploy:
-    name: Cloudflare Workers
+  # ---- Resolve environment ----
+  setup:
+    name: Resolve environment
     runs-on: ubuntu-latest
-    environment: production
+    defaults:
+      run:
+        working-directory: .
+    outputs:
+      environment: ${{ steps.map.outputs.environment }}
+      branch: ${{ steps.map.outputs.branch }}
+    steps:
+      - id: map
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ENVIRONMENT="${{ inputs.environment }}"
+          else
+            case "${{ github.ref_name }}" in
+              homolog) ENVIRONMENT=hml ;;
+              master)  ENVIRONMENT=production ;;
+              *)       ENVIRONMENT= ;;
+            esac
+          fi
+          case "$ENVIRONMENT" in
+            hml)        BRANCH=homolog ;;
+            production) BRANCH=master ;;
+            *)          BRANCH= ;;
+          esac
+          echo "environment=$ENVIRONMENT" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+  # ---- Build e deploy no Cloudflare Pages ----
+  deploy:
+    name: Cloudflare Pages
+    needs: setup
+    if: needs.setup.outputs.environment != ''
+    runs-on: ubuntu-latest
+    environment: ${{ needs.setup.outputs.environment }}
     env:
       HUSKY: 0
       NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
@@ -41,11 +80,16 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm exec opennextjs-cloudflare build
+      - run: pnpm build
 
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 4.151.0
           workingDirectory: brindefly-partner
-          command: deploy
+          command: >-
+            pages deploy out
+            --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+            --branch=${{ needs.setup.outputs.branch }}
+            --commit-hash=${{ github.sha }}
