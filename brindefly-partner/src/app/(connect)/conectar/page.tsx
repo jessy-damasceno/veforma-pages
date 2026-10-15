@@ -3,12 +3,13 @@ import { Suspense } from 'react'
 
 import { ConnectionGate } from '@/app/(connect)/_components/connection-gate'
 
-import { HeroSection } from './_components/hero-section'
+import { Landing } from './_components/landing'
 import { LandingSkeleton } from './_components/landing-skeleton'
-import { PlansSection } from './_components/plans-section'
 
 export const metadata: Metadata = {
-  title: 'Planos',
+  title: { absolute: 'Veforma 3D + Brindefly' },
+  description:
+    'A Veforma adiciona um visualizador 3D à sua loja Brindefly para o cliente escolher cores, tipos de impressão e aplicar a própria logo no produto.',
 }
 
 // useSearchParams dentro do gate exige Suspense na prerenderização.
@@ -16,8 +17,7 @@ export default function ConnectPage() {
   return (
     <Suspense fallback={<LandingSkeleton />}>
       <ConnectionGate fallback={<LandingSkeleton />}>
-        <HeroSection />
-        <PlansSection />
+        <Landing />
       </ConnectionGate>
     </Suspense>
   )
