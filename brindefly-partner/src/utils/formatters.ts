@@ -14,6 +14,10 @@ const currencyFormatter = new Intl.NumberFormat('pt-BR', {
 
 const numberFormatter = new Intl.NumberFormat('pt-BR')
 
+const compactNumberFormatter = new Intl.NumberFormat('pt-BR', {
+  notation: 'compact',
+})
+
 export const formatCurrencyFromCents = (cents: number): string =>
   cents % 100 === 0
     ? wholeCurrencyFormatter.format(cents / 100)
@@ -22,3 +26,7 @@ export const formatCurrencyFromCents = (cents: number): string =>
 /** `null` em limits significa ilimitado. */
 export const formatLimit = (value: number | null): string =>
   value === null ? 'Ilimitado' : numberFormatter.format(value)
+
+/** Versão curta para os selos dos planos: "10 mil", "1,5 mi". */
+export const formatCompactLimit = (value: number | null): string =>
+  value === null ? 'Ilimitado' : compactNumberFormatter.format(value)

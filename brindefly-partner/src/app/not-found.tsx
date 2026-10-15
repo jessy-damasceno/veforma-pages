@@ -7,7 +7,7 @@ export default function NotFound() {
       <p className="text-muted-foreground">
         O endereço que você acessou não existe.
       </p>
-      <Link href="/" className="underline underline-offset-4">
+      <Link href="/conectar" className="underline underline-offset-4">
         Voltar para o início
       </Link>
     </main>

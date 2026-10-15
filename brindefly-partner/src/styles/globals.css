@@ -5,6 +5,7 @@
 
 @theme inline {
   --font-sans: var(--font-poppins), system-ui, sans-serif;
+  --font-red-hat: var(--font-red-hat-text), var(--font-poppins), sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -30,6 +31,28 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-brindefly: var(--brindefly);
+
+  --color-brand-purple: var(--brand-purple);
+  --color-brand-indigo: var(--brand-indigo);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-sky: var(--brand-sky);
+  --color-brand-cobalt: var(--brand-cobalt);
+
+  /* Celular largo: abaixo disso os botões do hero ocupam a largura toda. */
+  --breakpoint-xs: 26.25rem;
+
+  --ease-smooth: cubic-bezier(0.16, 0.72, 0.24, 1);
+
+  /* Inline: as variáveis (--float-*, --bob-*, --ring-*) são lidas no próprio
+     elemento, então cada um ajusta duração, atraso e intensidade. */
+  --animate-float: float var(--float-duration, 6.5s) ease-in-out
+    var(--float-delay, 0s) infinite;
+  --animate-bob: bob var(--bob-duration, 7s) ease-in-out var(--bob-delay, 0s)
+    infinite;
+  --animate-dash-flow: dash-flow 1.1s linear infinite;
+  --animate-ring-pulse: ring-pulse 2.8s ease-in-out var(--ring-delay, 0s)
+    infinite;
+  --animate-disc-glow: disc-glow 2.8s ease-in-out infinite;
 }
 
 /* Tokens da Veforma (protótipo do Bruno · veforma-viewer/src/styles/globals.css) */
@@ -54,6 +77,79 @@
   --input: #dcdcdc;
   --ring: #a3a3a3;
   --brindefly: #083fc9;
+
+  /* Cores da landing (/conectar), amostradas do Figma */
+  --brand-purple: #6b57ec;
+  --brand-indigo: #4d4fd1;
+  --brand-blue: #083fc9;
+  --brand-sky: #1a91ff;
+  --brand-cobalt: #1342cc;
+}
+
+@utility bg-brand-gradient {
+  background-image: linear-gradient(
+    104deg,
+    var(--color-brand-purple) 28.74%,
+    var(--color-brand-blue) 97.29%
+  );
+}
+
+/* Cards do hero: flutuam com translate/rotate (propriedades individuais),
+   que se somam ao `transform` do efeito de rolagem sem brigar. */
+@keyframes float {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  30% {
+    translate: 3px -11px;
+    rotate: calc(0.5deg * var(--float-rotate-sign, 1));
+  }
+  65% {
+    translate: -2px -5px;
+    rotate: calc(-0.4deg * var(--float-rotate-sign, 1));
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -10px;
+  }
+}
+
+/* 20px = 1 período do tracejado (10 traço + 10 vão): o loop é contínuo. */
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+/* Anéis do play: cada um "respira" com a própria intensidade. */
+@keyframes ring-pulse {
+  0%,
+  100% {
+    opacity: var(--ring-opacity-low);
+    scale: 0.985;
+  }
+  45% {
+    opacity: var(--ring-opacity-peak);
+    scale: var(--ring-scale);
+  }
+}
+
+@keyframes disc-glow {
+  0%,
+  100% {
+    box-shadow: 0 25.6px 47.5px rgb(51 182 255 / 0.38);
+  }
+  45% {
+    box-shadow: 0 25.6px 52px rgb(51 182 255 / 0.7);
+  }
 }
 
 /* Anel da contagem regressiva da ativação: esvazia no tempo da animação. */
@@ -77,5 +173,44 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  button:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+/* Efeito de rolagem da landing (motor em
+   app/(connect)/conectar/_components/scroll-scrub.tsx): o JS escreve
+   --scrub-progress (0 → 1) em cada [data-scrub] conforme ele cruza a tela.
+   Em `components` para que utilitários do Tailwind possam sobrescrever. */
+@layer components {
+  [data-scrub] {
+    --scrub-progress: 0;
+    --scrub-distance-x: 120px;
+    --scrub-distance-y: 70px;
+    opacity: var(--scrub-progress);
+    will-change: transform, opacity;
+  }
+  [data-scrub="left"] {
+    transform: translateX(
+      calc((var(--scrub-progress) - 1) * var(--scrub-distance-x))
+    );
+  }
+  [data-scrub="right"] {
+    transform: translateX(
+      calc((1 - var(--scrub-progress)) * var(--scrub-distance-x))
+    );
+  }
+  [data-scrub="up"] {
+    transform: translateY(
+      calc((1 - var(--scrub-progress)) * var(--scrub-distance-y))
+    );
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-scrub] {
+      opacity: 1;
+      transform: none;
+    }
   }
 }
