@@ -1,0 +1,3 @@
+cd brindefly-partner
+pnpm lint-staged
+pnpm typecheck
